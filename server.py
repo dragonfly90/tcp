@@ -1,7 +1,7 @@
 import socket               # Import socket module
 import time					# Import time module
 import platform				# Import platform module to get our OS
-from _thread import *
+from thread import *
 import pickle
 
 s = socket.socket()# Create a socket object
@@ -202,6 +202,7 @@ def client_thread(conn, addr):
     combined_list = delete_combined_dictionary(combined_list, addr[0])
     conn.close()
 while True:
+    print "hello world"
     c, addr = s.accept()     # Establish connection with client.
     start_new_thread(client_thread, (c, addr))
 s.close()
