@@ -89,8 +89,9 @@ def search_combined_dict2(rfc_number):
 
 def p2s_list_response(conn):
     message = response_message("200")
-    conn.send(bytes(message, 'utf-8'))
-
+    #conn.send(bytes(message, 'utf-8'))
+    conn.send(bytes(message))
+    
 #Takes a list and appends a dictionary of hostname and port number
 def create_peer_list(dictionary_list, hostname, port):
     keys = ['Hostname', 'Port Number']
@@ -166,7 +167,8 @@ def return_dict():
 # Create a thread for each client. This prevents the server from blocking communication with multiple clients
 def client_thread(conn, addr):
     global peer_list, RFC_list, combined_list
-    conn.send(bytes('Thank you for connecting', 'utf-8'))
+    #conn.send(bytes('Thank you for connecting', 'utf-8'))
+    conn.send(bytes('Thank you for connecting'))
     print('Got connection from ', addr)
     data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
     my_port = data[0]
@@ -178,6 +180,7 @@ def client_thread(conn, addr):
 
     while True:
         data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+        print data
         if data == "EXIT":
             break
         if type(data) == str:
@@ -204,5 +207,7 @@ def client_thread(conn, addr):
 while True:
     print "hello world"
     c, addr = s.accept()     # Establish connection with client.
+    print c
+    print addr
     start_new_thread(client_thread, (c, addr))
 s.close()

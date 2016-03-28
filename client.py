@@ -4,7 +4,7 @@ import platform
 import os
 import pickle
 import random
-from _thread import *
+from thread import *
 import threading
 import sys
 import Simple_FTP_receiver
@@ -142,7 +142,8 @@ def print_combined_list(dictionary_list, keys):
         print(' '.join([item[key] for key in keys]))
 
 def get_user_input(strr, i):
-    user_input = input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
+    user_input = raw_input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
+    print user_input
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
         s.send(data)
@@ -158,9 +159,10 @@ def get_user_input(strr, i):
         get_user_input("hello", 1)
     elif user_input == "LIST":
         data = pickle.dumps(p2s_list_request(host, port))
+        print data
         s.send(data)
         server_data = s.recv(1024)
-        print(server_data.decode('utf-8'), end="")
+        print(server_data.decode('utf-8'))
 
         new_data = pickle.loads(s.recv(1000000))
         print_combined_list(new_data[0], new_data[1])
@@ -190,7 +192,7 @@ def get_user_input(strr, i):
         server_data = pickle.loads(s.recv(1024))
         #print(server_data[0][3])
         #print(server_data[0][1])
-        print(server_data[1], end="")
+        print(server_data[1])
         keys = ['RFC Number', 'RFC Title', 'Hostname', 'Port Number']
         print_combined_list(server_data[0], keys)
         get_user_input("hello", 1)
@@ -202,7 +204,7 @@ start_new_thread(get_user_input, ("hello", 1))
 while True:
     data_p2p, addr = upload_socket.recvfrom(1024)
     data_p2p = pickle.loads(data_p2p)
-    #print(data_p2p[0][0])
+    print(data_p2p[0][0])
     if data_p2p[0] == "G": #GET MSG
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
