@@ -122,7 +122,8 @@ def create_combined_list(dictionary_list, dict_list_of_rfcs, hostname, port):
         rfc_title = rfc['RFC Title']
         entry = [str(rfc_number), rfc_title, hostname, str(port)]
         dictionary_list.insert(0, dict(zip(keys, entry)))
-
+    print dictionary_list
+    print keys
     return dictionary_list, keys
 
 

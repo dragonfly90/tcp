@@ -141,6 +141,7 @@ def print_combined_list(dictionary_list, keys):
     for item in dictionary_list:
         print(' '.join([item[key] for key in keys]))
 
+#get the input from user
 def get_user_input(strr, i):
     user_input = raw_input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
     print user_input
@@ -150,8 +151,8 @@ def get_user_input(strr, i):
         s.close                     # Close the socket when done
         os._exit(1)
     elif user_input == "ADD":
-        user_input_rfc_number = input("> Enter the RFC Number: ")
-        user_input_rfc_title = input("> Enter the RFC Title: ")
+        user_input_rfc_number = raw_input("> Enter the RFC Number: ")
+        user_input_rfc_title = raw_input("> Enter the RFC Title: ")
         data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
         s.send(data)
         server_data = s.recv(1024)
@@ -169,8 +170,8 @@ def get_user_input(strr, i):
 
         get_user_input("hello", 1)
     elif user_input == "GET":
-        user_input_rfc_number = input("> Enter the RFC Number: ")
-        user_input_rfc_title = input("> Enter the RFC Title: ")
+        user_input_rfc_number = raw_input("> Enter the RFC Number: ")
+        user_input_rfc_title = raw_input("> Enter the RFC Title: ")
         global rcv_rfc_title
         rcv_rfc_title = str(user_input_rfc_title)
         data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "0"))
@@ -183,8 +184,8 @@ def get_user_input(strr, i):
             p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
         #get_user_input("hello", 1)
     elif user_input == "LOOKUP":
-        user_input_rfc_number = input("> Enter the RFC Number: ")
-        user_input_rfc_title = input("> Enter the RFC Title: ")
+        user_input_rfc_number = raw_input("> Enter the RFC Number: ")
+        user_input_rfc_title = raw_input("> Enter the RFC Title: ")
         data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "1"))
         #print(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title))
         #print(data)
