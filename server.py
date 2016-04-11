@@ -3,13 +3,11 @@ import time					# Import time module
 import platform				# Import platform module to get our OS
 from thread import *
 import pickle
+import ThreadTCP
 
-s = socket.socket()# Create a socket object
-host = socket.gethostname()  # Get local machine name
-port = 7734                  # Reserve a port for your service.
-s.bind(('', port))         # Bind to the port
+import SocketServer
+import threading
 
-s.listen(10)                  # Now wait for client connection.
 
 peer_list = []  # Global list of dictionaries for peers
 RFC_list = []   # Global list of dictionaries for RFCs
@@ -205,10 +203,83 @@ def client_thread(conn, addr):
     RFC_list = delete_rfcs_dictionary(RFC_list, addr[0])
     combined_list = delete_combined_dictionary(combined_list, addr[0])
     conn.close()
-while True:
-    print "hello world"
-    c, addr = s.accept()     # Establish connection with client.
-    print c
-    print addr
-    start_new_thread(client_thread, (c, addr))
-s.close()
+
+
+
+class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+
+    def handle(self):
+
+
+        global peer_list, RFC_list, combined_list
+        addr = self.client_address[0]
+        c = self.client_address[1]
+        print c
+        print addr
+
+        #start_new_thread(client_thread, (self.request, self.client_address))
+        conn = self.request
+        addr = self.client_address
+    #conn.send(bytes('Thank you for connecting', 'utf-8'))
+        conn.send(bytes('Thank you for connecting'))
+        print('Got connection from ', addr)
+        data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+        my_port = data[0]
+        print('upload port number is : ', my_port)
+    # Generate the peer list and RFC list
+        peer_list, peer_keys = create_peer_list(peer_list, addr[0], data[0])  # change addr[1] to data[0]
+        RFC_list, rfc_keys = create_rfc_list(RFC_list, data[1], addr[0])
+        combined_list, combined_keys = create_combined_list(combined_list, data[1], addr[0], data[0])
+
+        while True:
+            data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+            print data
+            if data == "EXIT":
+                break
+            if type(data) == str:
+                p2s_list_response(conn)
+                new_data = pickle.dumps(return_dict())
+                conn.send(new_data)
+            else:
+                if data[0][0] == "A":
+                    p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
+                    RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
+                    combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
+                if data[2] == "0":   #GET
+                    new_data = pickle.dumps(p2s_lookup_response(data[1]))
+                    conn.send(new_data)
+                elif data[2] == "1":   #LOOKUP
+                    new_data = pickle.dumps(p2s_lookup_response2(data[1]))
+                    conn.send(new_data)
+
+        # Remove the client's info from the dictionaries
+        peer_list = delete_peers_dictionary(peer_list, addr[0])
+        RFC_list = delete_rfcs_dictionary(RFC_list, addr[0])
+        combined_list = delete_combined_dictionary(combined_list, addr[0])
+        conn.close()
+
+
+
+
+host = socket.gethostname()  # Get local machine name
+port = 7734                  # Reserve a port for your service.
+
+
+
+
+server_A = ThreadTCP.ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
+    #server_B = ThreadedTCPServer((HOST, PORT_B), ThreadedTCPRequestHandler)
+
+server_A_thread = threading.Thread(target=server_A.serve_forever)
+    #server_B_thread = threading.Thread(target=server_B.serve_forever)
+
+server_A_thread.setDaemon(True)
+    #server_B_thread.setDaemon(True)
+
+server_A_thread.start()
+    #server_B_thread.start()
+
+while 1:
+    time.sleep(1)
+
+
