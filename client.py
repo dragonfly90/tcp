@@ -76,8 +76,10 @@ def p2p_get_request(rfc_num, peer_host, peer_upload_port):
 
     ResMsg = client.recv(128)
     print  '\n'+ResMsg
+    rfc_path = os.getcwd() + "/rfc"
+    filename = '/rfc'+RFCno+'.txt'
 
-    with open('received_file', 'wb') as f:
+    with open(rfc_path+filename, 'wb') as f:
         print 'file opened'
         while True:
         #print('receiving data...')
