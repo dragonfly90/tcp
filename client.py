@@ -182,7 +182,7 @@ def peer_information():
 
 #upload_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 #print("UPLOAD PORT: ", upload_port_num)
-TCP_IP = 'localhost'
+TCP_IP = socket.gethostname()
 BUFFER_SIZE = 1024
 upload_port_num = 9001  # generate a upload port randomly in 65000~65500
 TCP_PORT = upload_port_num
@@ -252,7 +252,7 @@ def get_user_input(strr, i):
         else:
             print server_data[0]["Hostname"], server_data[0]["Port Number"]
             p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
-        #get_user_input("hello", 1)
+        get_user_input("hello", 1)
     elif user_input == "LOOKUP":
         user_input_rfc_number = raw_input("> Enter the RFC Number: ")
         user_input_rfc_title = raw_input("> Enter the RFC Title: ")

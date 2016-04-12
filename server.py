@@ -259,13 +259,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         conn.close()
 
 
-
-
 host = socket.gethostname()  # Get local machine name
 port = 7734                  # Reserve a port for your service.
-
-
-
 
 server_A = ThreadTCP.ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
     #server_B = ThreadedTCPServer((HOST, PORT_B), ThreadedTCPRequestHandler)

@@ -3,8 +3,8 @@ import socket
 from threading import Thread
 from SocketServer import ThreadingMixIn
 
-TCP_IP = 'localhost'
-TCP_PORT = 9001
+TCP_IP = socket.gethostname()
+TCP_PORT = 49152
 BUFFER_SIZE = 1024
 
 class ClientThread(Thread):
