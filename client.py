@@ -14,43 +14,15 @@ import ThreadTCP
 import SocketServer
 
 version = 'P2P-CI/2.0'
+rcv_rfc_num = ''  #record rfc_num for rdt_recv()
+rcv_rfc_title = ''
+threads = []
 
 
 def PeerFormRequestMessage(method,RFCno,self_host,upload_port):
     message = method + ' '+'RFC '+str(RFCno) +' '+ version + '\n' + 'Host: '+ self_host + '\n'+ 'OS: '+ platform.system()+platform.release()
     return message
 
-
-#TCP_IP = 'localhost'
-#TCP_PORT = 9001
-#BUFFER_SIZE = 1024
-
-#import Simple_FTP_receiver
-#import Simple_FTP_sender
-#import Simple_UDP_receiver
-#import Simple_UDP_sender
-
-rcv_rfc_num = ''  #record rfc_num for rdt_recv()
-rcv_rfc_title = ''
-
-
-
-
-
-def get_filename(rfc_num):
-    global rcv_rfc_title
-    OS = platform.system()
-    if OS == "Windows":  # determine rfc path for two different system
-        rfc_path = "\\rfc\\"
-    else:
-        rfc_path = "/rfc/"
-    files = os.listdir(os.getcwd() + rfc_path)
-    m = rfc_num.split()
-    rfc_num = "".join(m)
-    for item in files:
-        if str(rfc_num) in item:
-            return rfc_path + item
-    return rfc_path + "rfc" + str(rfc_num) + ", " +str(rcv_rfc_title)+".txt"
 
 def p2p_get_request(rfc_num, peer_host, peer_upload_port):
     global upload_socket
@@ -178,32 +150,6 @@ def peer_information():
         dict_list_of_rfcs.insert(0, dict(zip(keys, entry)))
     return [upload_port_num, dict_list_of_rfcs]  # [port, rfcs_num, rfcs_title]
 
-# first instantiates an upload server process listening to any available local port
-
-#upload_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#print("UPLOAD PORT: ", upload_port_num)
-TCP_IP = socket.gethostname()
-BUFFER_SIZE = 1024
-upload_port_num = 9001  # generate a upload port randomly in 65000~65500
-TCP_PORT = upload_port_num
-
-#upload_socket.bind(('', upload_port_num))
-dict_list_of_rfcs = []  # list of dictionaries of RFC numbers and Titles.
-
-#passes information about the peer to the server
-s=socket.socket()          # Create a socket object
-#s.setsockopt(socket.SOL_SOCKET, socket.SO_RESUEDADDR, 1)
-host = socket.gethostname()  # Get local machine name
-#host = "10.139.71.143"
-port = 7734                  # Reserve a port for your service.
-s.connect((host, port))
-data = pickle.dumps(peer_information())  # send all the peer information to server
-s.send(data)
-#s.makefile('r')
-data = s.recv(1024)
-print(data.decode('utf-8'))
-s.close
-
 
 
 def print_combined_list(dictionary_list, keys):
@@ -213,7 +159,7 @@ def print_combined_list(dictionary_list, keys):
 #get the input from user
 def get_user_input(strr, i):
     user_input = raw_input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
-    print user_input
+
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
         s.send(data)
@@ -229,10 +175,10 @@ def get_user_input(strr, i):
         get_user_input("hello", 1)
     elif user_input == "LIST":
         data = pickle.dumps(p2s_list_request(host, port))
-        print data
+
         s.send(data)
         server_data = s.recv(1024)
-        print(server_data.decode('utf-8'))
+
 
         new_data = pickle.loads(s.recv(1000000))
         print_combined_list(new_data[0], new_data[1])
@@ -269,8 +215,6 @@ def get_user_input(strr, i):
         get_user_input("hello", 1)
     else:
         get_user_input("hello", 1)
-
-start_new_thread(get_user_input, ("hello", 1))
 
 class ClientThread(Thread):
 
@@ -324,7 +268,7 @@ class ClientThread(Thread):
                 self.sock.close()
                 break
 
-threads = []
+
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
@@ -333,9 +277,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         print "Waiting for incoming connections..."
         #(conn, (ip,port)) = self.accept()
         print 'Got connection from ', self.client_address
-        #newthread = ClientThread(self.client_address[0],self.client_address[1],self.request)
-        #newthread.start()
-        #threads.append(newthread)
+
         ReqMsg = self.request.recv(1024)
         print '\nGot a request message:'
         print '\n--------------------------------'
@@ -382,29 +324,49 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 self.request.close()
                 break
 
+TCP_IP = socket.gethostname()
+BUFFER_SIZE = 1024
+upload_port_num = 9001  # generate a upload port randomly in 65000~65500
+TCP_PORT = upload_port_num
+
+
+dict_list_of_rfcs = []  # list of dictionaries of RFC numbers and Titles.
+
+s=socket.socket()          # Create a socket object
+
+host = socket.gethostname()  # Get local machine name
+
+port = 7734                  # Reserve a port for your service.
+s.connect((host, port))
+data = pickle.dumps(peer_information())  # send all the peer information to server
+s.send(data)
+
+data = s.recv(1024)
+print(data.decode('utf-8'))
+s.close
+
+start_new_thread(get_user_input, ("hello", 1))
 
 
 if __name__ == "__main__":
 
-
-
-    host = TCP_IP  # Get local machine name
+    host = TCP_IP                       # Get local machine name
     port = TCP_PORT                  # Reserve a port for your service.
 
 
 
 
     server_A = ThreadTCP.ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
-    #server_B = ThreadedTCPServer((HOST, PORT_B), ThreadedTCPRequestHandler)
+
 
     server_A_thread = threading.Thread(target=server_A.serve_forever)
-    #server_B_thread = threading.Thread(target=server_B.serve_forever)
+
 
     server_A_thread.setDaemon(True)
-    #server_B_thread.setDaemon(True)
+
 
     server_A_thread.start()
-    #server_B_thread.start()
+
 
     while 1:
         time.sleep(1)
@@ -418,41 +380,3 @@ if __name__ == "__main__":
 
 
 
-
-
-
-#while True:
-#    data_p2p, addr = upload_socket.recvfrom(1024)
-#    data_p2p = pickle.loads(data_p2p)
-#    print(data_p2p[0][0])
-#    if data_p2p[0] == "G": #GET MSG
-#        indexP = data_p2p.index('P')
-#        indexC = data_p2p.index('C')
-#        rfc_num = data_p2p[indexC+1:indexP-1]
-#        filename = get_filename(rfc_num)
-        #print("FILENAME: ", filename)
-#        message = p2p_response_message(filename)
-#        upload_socket.sendto(pickle.dumps(message),(addr))
-
-#        Simple_UDP_sender.rdt_send(os.getcwd() + filename, addr[0])
-
-        #print("SENDER ADDRESS:", addr[0])
-        #n = sys.argv[1]
-        #print("N = ", n)
-        #mss = sys.argv[2]
-        #print("MSS = ", mss)
-        #Simple_FTP_sender.rdt_send(os.getcwd() + filename, addr[0], n, mss)
-        #start_new_thread(get_user_input, ("hello", 1))
-#    elif data_p2p[0][0] == "P":
-        #global rcv_rfc_num
-#        OS = platform.system()
-#        filename = data_p2p[1]
-        #print("FILENAME: ", filename)
-        #prob_loss = sys.argv[3]
-        #print("LOST PROB = ", prob_loss)
-        #Simple_FTP_receiver.rdt_recv(os.getcwd() + filename, prob_loss)
-#        Simple_UDP_receiver.rdt_recv(filename)
-
-#        rcv_rfc_num = ''
-#        rcv_rfc_title = ''
-#        start_new_thread(get_user_input, ("hello", 1))
