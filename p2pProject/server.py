@@ -122,8 +122,7 @@ def create_combined_list(dictionary_list, dict_list_of_rfcs, hostname, port):
         rfc_title = rfc['RFC Title']
         entry = [str(rfc_number), rfc_title, hostname, str(port)]
         dictionary_list.insert(0, dict(zip(keys, entry)))
-    print dictionary_list
-    print keys
+
     return dictionary_list, keys
 
 
@@ -197,8 +196,15 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             else:
                 if data[0][0] == "A":
                     p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
-                    RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
-                    combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
+                    exitedfile = False
+                    for item in RFC_list:
+                        if data[1] in item['RFC Number']:
+                            exitedfile = True
+                            break
+                    if exitedfile == False:
+                        RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
+                        combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
+
                 if data[2] == "0":   #GET
                     new_data = pickle.dumps(p2s_lookup_response(data[1]))
                     conn.send(new_data)
