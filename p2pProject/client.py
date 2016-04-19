@@ -203,7 +203,7 @@ def get_user_input(strr, i):
             get_user_input("hello", 1)
         else:
             print server_data[0]["Hostname"], server_data[0]["Port Number"]
-            p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"]p2s_add_message, server_data[0]["Port Number"])
+            p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
 
             #update the file
             
