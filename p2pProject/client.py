@@ -203,15 +203,10 @@ def get_user_input(strr, i):
             get_user_input("hello", 1)
         else:
             print server_data[0]["Hostname"], server_data[0]["Port Number"]
-            p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
+            p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"]p2s_add_message, server_data[0]["Port Number"])
 
             #update the file
-            if os.path.isfile(os.getcwd() + "/rfc/rfc"+str(user_input_rfc_number)+".txt"):
-                data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
-                s.send(data)
-                server_data = s.recv(1024)
-            else:
-                print "file not existed in current client"
+            
         get_user_input("hello", 1)
     elif user_input == "LOOKUP":
         user_input_rfc_number = raw_input("> Enter the RFC Number: ")
@@ -335,7 +330,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 self.request.close()
                 break
 
-TCP_IP = socket.gethostname()
+TCP_IP = ''
 BUFFER_SIZE = 1024
 upload_port_num = 65000+random.randint(1, 500)
 TCP_PORT = upload_port_num
