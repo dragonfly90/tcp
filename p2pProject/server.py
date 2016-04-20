@@ -197,9 +197,9 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 if data[0][0] == "A":
                     p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
                     exitedfile = False
-                    print addr[0], data[1]
+                    #print addr[0], data[1]RFC_list
                     for item in RFC_list:
-                        print item
+                        #print item
                         if int(data[1])==int(item['RFC Number']) and addr[0]==item['Hostname']:
                             exitedfile = True
                             break

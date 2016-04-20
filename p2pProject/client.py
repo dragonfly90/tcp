@@ -16,8 +16,6 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 version = 'P2P-CI/1.0'
-rcv_rfc_num = ''  #record rfc_num for rdt_recv()
-rcv_rfc_title = ''
 threads = []
 
 
@@ -27,29 +25,24 @@ def PeerFormRequestMessage(method,RFCno,self_host,upload_port):
 
 
 def p2p_get_request(rfc_num, peer_host, peer_upload_port):
-    global upload_socket
-    global rcv_rfc_num
-    rcv_rfc_num = rfc_num
+
     data = p2p_request_message(rfc_num, host)
     data = pickle.dumps(data)
-
-
-
     portnumber=int(peer_upload_port)
-    print portnumber
+
+    #print portnumber
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((peer_host, portnumber))
-    print portnumber
+    #print portnumber
 
     method = 'GET'
     RFCno = rfc_num
-
 
     ReqMsg = PeerFormRequestMessage(method,RFCno,peer_host,portnumber)
     client.send(ReqMsg)
 
     ResMsg = client.recv(128)
-    print  '\n'+ResMsg
+    #print  '\n'+ResMsg
     rfc_path = os.getcwd() + "/rfc"
     filename = '/rfc'+RFCno+'.txt'
 
@@ -158,69 +151,60 @@ def print_combined_list(dictionary_list, keys):
         print(' '.join([item[key] for key in keys]))
 
 
-def get_user_input(strr, i):
+def get_user_input():
     user_input = raw_input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
 
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
         s.send(data)
-        s.close                     # Close the socket when done
+        s.close
         os._exit(1)
+
     elif user_input == "ADD":
         user_input_rfc_number = raw_input("> Enter the RFC Number: ")
-        user_input_rfc_title = raw_input("> Enter the RFC Title: ")
-
+        user_input_rfc_title ='rfc'+user_input_rfc_number
         if os.path.isfile(os.getcwd() + "/rfc/"+user_input_rfc_title+".txt"):
             data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
             s.send(data)
             server_data = s.recv(1024)
         else:
             print "file not existed in current client"
+        get_user_input()
 
-
-        get_user_input("hello", 1)
     elif user_input == "LIST":
         data = pickle.dumps(p2s_list_request(host, port))
-
         s.send(data)
         server_data = s.recv(1024)
-
-
         new_data = pickle.loads(s.recv(1000000))
         print_combined_list(new_data[0], new_data[1])
+        get_user_input()
 
-        get_user_input("hello", 1)
     elif user_input == "GET":
         user_input_rfc_number = raw_input("Enter the RFC Number: ")
-        user_input_rfc_title = raw_input("Enter the RFC Title: ")
-        global rcv_rfc_title
-        rcv_rfc_title = str(user_input_rfc_title)
+        user_input_rfc_title ='rfc'+user_input_rfc_number
         data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "0"))
         s.send(data)
         server_data = pickle.loads(s.recv(1024))
         if not server_data[0]:
             print(server_data[1])
-            get_user_input("hello", 1)
+            get_user_input()
         else:
             print server_data[0]["Hostname"], server_data[0]["Port Number"]
             p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
+        get_user_input()
 
-            #update the file
-            
-        get_user_input("hello", 1)
     elif user_input == "LOOKUP":
         user_input_rfc_number = raw_input("> Enter the RFC Number: ")
-        user_input_rfc_title = raw_input("> Enter the RFC Title: ")
+        user_input_rfc_title ='rfc'+user_input_rfc_number
         data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "1"))
-
         s.send(data)
         server_data = pickle.loads(s.recv(1024))
-
         keys = ['RFC Number', 'RFC Title', 'Hostname', 'Port Number']
         print_combined_list(server_data[0], keys)
-        get_user_input("hello", 1)
+        get_user_input()
+
     else:
-        get_user_input("hello", 1)
+        get_user_input()
 
 class ClientThread(Thread):
 
@@ -323,7 +307,6 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             l = f.read(BUFFER_SIZE)
             while (l):
                 self.request.send(l)
-                #print('Sent ',repr(l))
                 l = f.read(BUFFER_SIZE)
             if not l:
                 f.close()
@@ -336,54 +319,40 @@ upload_port_num = 65000+random.randint(1, 500)
 TCP_PORT = upload_port_num
 
 
-dict_list_of_rfcs = []  # list of dictionaries of RFC numbers and Titles.
-
-s=socket.socket()          # Create a socket object
-
-hostIP = raw_input("Choose Local Server, please input 0, either input 1: ")
+dict_list_of_rfcs = []
+s=socket.socket()
+hostIP = raw_input("Choose Local Server, please input 0, otherwise input 1: ")
 
 if hostIP=="0":
-    host = socket.gethostname()  # Get local machine name
+    host = socket.gethostname()
 else:
     host = raw_input("Input IP address: ")
-#host = "SERVER_TCP"
-port = 7734                  # Reserve a port for your service.
 
+port = 7734
 try:
     s.connect((host, port))
 except:
     sys.exit("Failed to connect host, please check the ip address!")
 
-data = pickle.dumps(peer_information())  # send all the peer information to server
+data = pickle.dumps(peer_information())
 s.send(data)
-
 data = s.recv(1024)
-print(data.decode('utf-8'))
 s.close
 
-start_new_thread(get_user_input, ("hello", 1))
+start_new_thread(get_user_input,())
 
 
 if __name__ == "__main__":
 
-    host = TCP_IP                       # Get local machine name
-    port = TCP_PORT                  # Reserve a port for your service.
-
+    host = TCP_IP
+    port = TCP_PORT
     server_A = ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
-
-
     server_A_thread = threading.Thread(target=server_A.serve_forever)
-
-
     server_A_thread.setDaemon(True)
-
-
     server_A_thread.start()
-
 
     while 1:
         time.sleep(1)
-
 
     for t in threads:
         t.join()
