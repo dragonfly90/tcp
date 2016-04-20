@@ -51,7 +51,7 @@ def p2p_get_request(rfc_num, peer_host, peer_upload_port):
         while True:
 
             data = client.recv(BUFFER_SIZE)
-            print('data=%s', (data))
+            #print('data=%s', (data))
             if not data:
                 f.close()
                 print 'file close()'
@@ -186,7 +186,7 @@ def get_user_input():
         s.send(data)
         server_data = pickle.loads(s.recv(1024))
         if not server_data[0]:
-            print(server_data[1])
+            #print(server_data[1])
             get_user_input()
         else:
             print server_data[0]["Hostname"], server_data[0]["Port Number"]
